@@ -1,0 +1,160 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsfonts}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{mathtools,amsthm,amssymb,icomma,upgreek,xfrac,amsmath}
+\usepackage{geometry}
+\usepackage{blindtext}
+\usepackage{indentfirst}
+\usepackage{array}
+\usepackage{makecell}
+\usepackage[bottom]{footmisc}
+\usepackage{tablefootnote}
+\usepackage{hyperref}
+
+
+\title{Raport 1}
+\author{Aleksander Rzyhak}
+\date{\today}
+
+\begin{document}
+\begin{titlepage}
+\begin{figure}[H]
+\centering
+  \includegraphics[scale=0.40]{pwr.png}%
+\end{figure}
+\vspace{1.5cm}
+\begin{center}
+ {\LARGE\bfseries Raport 1\\}
+ \vspace{1.4cm}
+ {\LARGE\bfseries Pakiety Statystyczne\\}
+ {\Large Prowadzący kurs: dr inż. Agnieszka Kamińska\\}
+ \vspace{3cm}
+  {\Large\bfseries Aleksander Rzyhak\\[5pt]}{\Large nr indeksu: 268766\\[14pt]}
+  {\Large\bfseries Michał Tokarski\\[5pt]}{\Large nr indeksu: 268747\\[14pt]}
+
+ \vfill
+{\Large \today}
+\end{center}
+\end{titlepage}
+
+\section{Wstęp i opis danych}
+Celem sprawozdania była analiza wybranych danych na podstawie wiedzy zdobytej na laboratoriach i wykładzie z Pakietów statystycznych. Badanie polegało na próbie odpowiedzenia na przygotowane pytania badawcze. Raport napisano korzystając z języka programowania R, przy pomocy pakietu KnitR.
+
+Dane zaczerpnięte zostały ze strony \href{kaggle.com}{Kaggle}\footnote{https://www.kaggle.com/datasets/rush4ratio/video-game-sales-with-ratings}, a dotyczą sprzedaży oraz ocen gier komputerowych. Wartości dotyczące sprzedaży zostały stworzone na bazie strony \href{https://www.vgchartz.com/}{VGChartz}, natomiast oceny gier zostały wzięte ze strony \href{https://www.metacritic.com}{Metacritic}. Całkowita ilość badanych gier to 16719.
+
+%to jest ukryte bo mi sie przydaje we wstępie, ale no wczytanie danych zostawiamy na kolejną sekcje
+<<include=FALSE, cache=TRUE>>=
+library(tidyverse)
+
+gry <- read_csv("gry.csv")
+
+no_unique <- sapply(gry, function(x) length(unique(x)))
+maxGry <- sapply(gry, max, na.rm=TRUE)
+minGry <- sapply(gry, min, na.rm=TRUE)
+@
+
+Dane określone są następującymi kolumnami:
+\begin{itemize}
+  \setlength\itemsep{1pt}
+  \item \textbf{Name} - nazwa gry (zmienna tekstowa, \Sexpr{no_unique[1]} różnych wartości),
+  \item \textbf{Platfrom} - nazwa platformy (zmienna tekstowa, \Sexpr{no_unique[2]} różnych wartości),
+  \item \textbf{Year\_of\_Release} - rok wydania (zmienna tekstowa, \Sexpr{no_unique[3]} różnych wartości),
+  \item \textbf{Genre} - gatunek gry (zmienna tekstowa, \Sexpr{no_unique[4]} różnych wartości),
+  \item \textbf{Publisher} - wydawca gry (zmienna tekstowa, \Sexpr{no_unique[5]} różnych wartości),
+  \item \textbf{Na\_Sales} - ilość sprzedanych kopii gry (w milionach) w Ameryce Północnej (zmienna liczbowa, wartości od \Sexpr{minGry[6]} do \Sexpr{maxGry[6]}),
+  \item \textbf{Eu\_Sales} - ilość sprzedanych kopii gry (w milionach) w Europie (zmienna liczbowa, wartości od \Sexpr{minGry[7]} do \Sexpr{maxGry[7]}),
+  \item \textbf{JP\_Sales} - ilość sprzedanych kopii gry (w milionach) w Japonii (zmienna liczbowa, wartości od \Sexpr{minGry[8]} do \Sexpr{maxGry[8]}),
+  \item \textbf{Other\_Sales} - ilość sprzedanych kopii gry (w milionach) w pozostałej częsci świata (zmienna liczbowa, wartości od \Sexpr{minGry[9]} do \Sexpr{maxGry[9]}),
+  \item \textbf{Global\_Sales} - całkowita ilość sprzedanych kopii gry (w milionach) (zmienna liczbowa, wartości od \Sexpr{minGry[10]} do \Sexpr{maxGry[10]}),
+  \item \textbf{Critic\_Score} - średnia ocena gry przez krytyków w skali od 0 do 100 (zmienna liczbowa, wartości od \Sexpr{minGry[11]} do \Sexpr{maxGry[11]}),
+  \item \textbf{Critic\_Count} - ilość krytyków, którzy oceniili daną grę (zmienna liczbowa, wartości od \Sexpr{minGry[12]} do \Sexpr{maxGry[12]}),
+  \item \textbf{User\_Score} - średnia ocena gry przez graczy w skali od 0 do 10 (zmienna liczbowa, wartości od \Sexpr{minGry[13]} do \Sexpr{maxGry[13]}),
+  \item \textbf{User\_Count} - ilość graczy, którzy oceniili daną grę (zmienna liczbowa, wartości od \Sexpr{minGry[14]} do \Sexpr{maxGry[14]}),
+  \item \textbf{Developer} - studio, które stworzyło daną grę (zmienna tekstowa, \Sexpr{no_unique[15]} różnych wartości),
+  \item \textbf{Rating} - kategoria wiekowa wyznaczona przez \href{https://www.esrb.org/}{ESRB}. (zmienna tekstowa, \Sexpr{no_unique[16]} różnych wartości).
+\end{itemize}
+\newpage
+Analiza danych dotyczyła następujących pytań badawczych:
+\begin{enumerate}
+  \item Czy sprzedaż gier rozkłąda się podobnie dla różnych rynków?
+  \item Na jakich platformach sprzedaje się najwięcej gier oraz jacy wydawcy sprzedają ich najwięcej?
+  \item Czy ocena graczy i krytyków wpływa na sprzedaż (i potencjalnie jak)?
+\end{enumerate}
+
+\section{Wczytanie danych i obsługa ich braków}
+
+% To jest po to, żeby wczytać bibliotekę za każdym razem, ale nie wczytywać csv (działa szybciej po pierwszym przekompilowaniu)
+<<include=FALSE>>=
+library(tidyverse)
+@
+% Na pokaz
+<<message=FALSE, cache=TRUE>>=
+library(tidyverse)
+
+gry <- read_csv("gry.csv")
+@
+
+% Nie wiem kto to bedzie pisał, ale musi tu być coś w stylu "Warto zauważyć, że w zmiennych dotyczących sprzedaży nie występują braki danych i wynika to z tego, że najprawdopodobniej zbieranie danych zostało rozpoczęte właśnie od wartości dotyczących sprzedaży"
+\section{Analiza danych}
+\subsection{Czy sprzedaż gier rozkłada się podobnie na różnych rynkach?}
+
+Podczas początkowej wizualizacji danych dotyczących sprzedaży zauważono dużą ilość obserwacji odstających wartości \textbf{Global\_Sales}. Można to zauważyć na wykresie pudełkowym (Rys. \ref{fig:GlobalBox}), którego część pudełkowa jest tak spłaszczona, że nie widać jak jest szeroka.
+
+<<rysunek, label=GlobalBox, echo=FALSE, results='hide', fig.cap="Wykres pudełkowy bez odrzucenia wartości odstających", fig.align='center', fig.dim=c(5, 3.5), fig.pos="H">>=
+gry |> ggplot(aes(y=Global_Sales))+
+  geom_boxplot()+
+  ggtitle("Wykres pudełkowy zmiennej dotyczącej globalnej sprzedaży gier")+
+  xlab("Cała populacja")+
+  ylab("Globalna sprzedaż gier (w milionach)")+
+  theme(plot.title=element_text(size=10, hjust=0.5))
+@
+
+Takie same wnioski dotyczące obserwacji odstających wyciągnięto dla wartości \textbf{NA\_Sales}, \textbf{EU\_Sales}, \textbf{JP\_Sales} i \textbf{Other\_Sales}. W celu przeprowadzenia analizy dotyczącej podobieństwa rozkładów sprzedaży postanowiono odrzucić wartości odstajęce z uwagi na możliwy ich mocny wpływ na wnioski. Aby to zrobić odrzucono wartości będące poza wąsami, czyli te będące poza przedziałem $[Q_1-1,5\cdot IQR; Q\_3+1,5\cdot IQR]$, gdzie $Q_1$ i $Q_3$ to pierwszy i trzeci kwartyl badanych wartości, a $IQR$ to rozstrzał międzykwartylowy. Odrzucono również wartości równe 0 z uwagi na dużą ich ilość. Poniższy kod przedstawia jak zostało to wykonane dla zmiennej \textbf{Global\_Sales} w R:
+
+<<message=FALSE, cache=TRUE>>=
+Q <- quantile(gry$Global_Sales, probs=c(.25, .75), na.rm = TRUE)
+iqr <- IQR(gry$Global_Sales, na.rm=TRUE)
+
+eliminated <- gry %>%
+  filter(Global_Sales > (Q[1] - 1.5*iqr) & Global_Sales < (Q[2]+1.5*iqr) &
+           Global_Sales > 0) 
+@
+
+Po eliminacji niechcianych wartości (których było \Sexpr{count(gry)-count(eliminated)}) otrzymano dane, które przedstawiono na poniższym wykresie pudełkowym (Rys. \ref{fig:GlobalOds}). Widać na nim, że wyeliminowanie wartości odstających spowodowało, że rozkład jest mniej zdegenerowany.
+
+<<rysunek, label=GlobalOds, echo=FALSE, results='hide', fig.cap="Wykres pudełkowy z odrzuconymi wartościami odstającymi", fig.align='center', fig.dim=c(5, 3.5), fig.pos="H">>=
+eliminated |> ggplot(aes(y=Global_Sales))+
+  geom_boxplot()+
+  ggtitle("Wykres pudełkowy zmiennej dotyczącej globalnej sprzedaży gier")+
+  xlab("Populacja bez wartości odstających")+
+  ylab("Globalna sprzedaż gier (w milionach)")+
+  theme(plot.title=element_text(size=10, hjust=0.5))
+@
+
+
+%Żle, musze to poprawić (nienawidzę R)
+<<include=FALSE, cache=TRUE>>=
+eliminated = vector(length=5)
+names = c("Global_Sales", "NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales")
+for (i in 1:5) {
+  Q <- quantile(gry$names[[i]], probs=c(.25, .75), na.rm = TRUE)
+  iqr <- IQR(gry$names[i], na.rm=TRUE)
+
+  eliminated[[i]] <- gry %>%
+  filter(names[[i]] > (Q[1] - 1.5*iqr) & names[[i]] < (Q[2]+1.5*iqr) &
+           Global_Sales > 0) 
+}
+ 
+@
+
+Dla wszystkich pozostałych zmiennych dotyczących sprzedaży gier (\textbf{NA\_Sales}, \textbf{EU\_Sales}, \textbf{JP\_Sales} i \textbf{Other\_Sales}) wykonano taką samą procedurę, usuwajc przy tym \Sexpr{count(gry)-count(eliminated)} wartości. Z tak zmienionymi danymi można rozpocząć odpowiadanie na zadane pytanie badawcze.
+\section{Podsumowanie}
+
+
+\end{document}

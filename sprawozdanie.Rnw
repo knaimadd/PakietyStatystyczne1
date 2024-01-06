@@ -142,18 +142,9 @@ eliminated |> ggplot(aes(y=Global_Sales))+
 <<include=FALSE, cache=TRUE>>=
 eliminated = vector(length=5)
 names = c("Global_Sales", "NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales")
-for (i in 1:5) {
-  Q <- quantile(gry$names[[i]], probs=c(.25, .75), na.rm = TRUE)
-  iqr <- IQR(gry$names[i], na.rm=TRUE)
-
-  eliminated[[i]] <- gry %>%
-  filter(names[[i]] > (Q[1] - 1.5*iqr) & names[[i]] < (Q[2]+1.5*iqr) &
-           Global_Sales > 0) 
-}
- 
 @
 
-Dla wszystkich pozostałych zmiennych dotyczących sprzedaży gier (\textbf{NA\_Sales}, \textbf{EU\_Sales}, \textbf{JP\_Sales} i \textbf{Other\_Sales}) wykonano taką samą procedurę, usuwajc przy tym \Sexpr{count(gry)-count(eliminated)} wartości. Z tak zmienionymi danymi można rozpocząć odpowiadanie na zadane pytanie badawcze.
+Dla wszystkich pozostałych zmiennych dotyczących sprzedaży gier (\textbf{NA\_Sales}, \textbf{EU\_Sales}, \textbf{JP\_Sales} i \textbf{Other\_Sales}) wykonano taką samą procedurę. Z tak zmienionymi danymi można rozpocząć odpowiadanie na zadane pytanie badawcze.
 \section{Podsumowanie}
 
 

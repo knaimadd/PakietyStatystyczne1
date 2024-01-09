@@ -141,11 +141,15 @@ eliminated |> ggplot(aes(y=Global_Sales))+
 
 
 <<message=FALSE, cache=TRUE>>=
+outlier<- function(X) {
+  Q = quantile(X, probs=c(0.25, 0.75), na.rm=TRUE)
+  iqr = IQR(X, na.rm=TRUE)
+  X < Q[1] - 1.5*iqr & X > Q[2] + 1.5*iqr
+}
+
+
 elim <- gry %>% mutate(across(ends_with("Sales"), ~replace(., .==0, NA))) %>% 
-  mutate(across(ends_with("Sales"),
-    ~replace(., . < quantile(., probs=0.25, na.rm=TRUE)-1.5*IQR(., na.rm=TRUE) | 
-                . > quantile(., probs=0.75, na.rm=TRUE)+1.5*IQR(., na.rm=TRUE),
-                NA)))
+  mutate(across(ends_with("Sales"), ~replace(., outlier(.), NA)))
 @
 
 Dla wszystkich pozostałych zmiennych dotyczących sprzedaży gier wykonano podobną procedurę tylko zamiast usuwać wartości zamieniono je na braki danych (kod powyżej). Dla \textbf{NA\_Sales}, \textbf{EU\_Sales}, \textbf{JP\_Sales} i \textbf{Other\_Sales} zmieniono kolejno: \Sexpr{sum(is.na(elim$NA_Sales))}, \Sexpr{sum(is.na(elim$EU_Sales))}, \Sexpr{sum(is.na(elim$JP_Sales))} i \Sexpr{sum(is.na(elim$Other_Sales))} wartości. Z tak zmienionymi danymi można rozpocząć odpowiadanie na zadane pytanie badawcze.

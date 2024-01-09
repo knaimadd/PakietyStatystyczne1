@@ -31,3 +31,15 @@ normed %>% ggplot()+
        x = "Wartość",
        color = "Kolumna")+
   theme(axis.title=element_text(size=10))
+
+
+outliers <- function(X) {
+  Q = quantile(X, probs=c(0.25, 0.75), na.rm=TRUE)
+}
+
+elim <- gry %>% mutate(across(ends_with("Sales"), ~replace(., .==0, NA))) %>% 
+  mutate(across(ends_with("Sales"),
+                ~replace(., . < quantile(., probs=0.25, na.rm=TRUE)-1.5*IQR(., na.rm=TRUE) | 
+                           . > quantile(., probs=0.75, na.rm=TRUE)+1.5*IQR(., na.rm=TRUE),
+                         NA)))
+

@@ -133,18 +133,16 @@ Po eliminacji niechcianych wartości (których było \Sexpr{count(gry)-count(eli
 
 <<rysunek, label=GlobalOds, echo=FALSE, results='hide', fig.cap="Wykres pudełkowy z odrzuconymi wartościami odstającymi", fig.align='center', fig.dim=c(5, 3.8), fig.pos="H">>=
 eliminated |> ggplot(aes(y=Global_Sales))+
-  geom_boxplot(outlier.size=0.7)+
+  geom_boxplot(outlier.size=0.5)+
   xlab("Populacja bez wartości odstających")+
-  ylab("Globalna sprzedaż gier (w milionach)")+
-  theme(plot.title=element_text(size=10, hjust=0.5))
+  ylab("Globalna sprzedaż gier (w milionach)")
 @
-
 
 <<message=FALSE, cache=TRUE>>=
 outlier<- function(X) {
   Q = quantile(X, probs=c(0.25, 0.75), na.rm=TRUE)
   iqr = IQR(X, na.rm=TRUE)
-  X < Q[1] - 1.5*iqr & X > Q[2] + 1.5*iqr
+  X < Q[1] - 1.5*iqr | X > Q[2] + 1.5*iqr
 }
 
 
@@ -152,9 +150,20 @@ elim <- gry %>% mutate(across(ends_with("Sales"), ~replace(., .==0, NA))) %>%
   mutate(across(ends_with("Sales"), ~replace(., outlier(.), NA)))
 @
 
-Dla wszystkich pozostałych zmiennych dotyczących sprzedaży gier wykonano podobną procedurę tylko zamiast usuwać wartości zamieniono je na braki danych (kod powyżej). Dla \textbf{NA\_Sales}, \textbf{EU\_Sales}, \textbf{JP\_Sales} i \textbf{Other\_Sales} zmieniono kolejno: \Sexpr{sum(is.na(elim$NA_Sales))}, \Sexpr{sum(is.na(elim$EU_Sales))}, \Sexpr{sum(is.na(elim$JP_Sales))} i \Sexpr{sum(is.na(elim$Other_Sales))} wartości. Z tak zmienionymi danymi można rozpocząć odpowiadanie na zadane pytanie badawcze.
+Dla wszystkich pozostałych zmiennych dotyczących sprzedaży gier wykonano podobną procedurę tylko zamiast usuwać wartości zamieniono je na braki danych (kod powyżej). Dla \textbf{NA\_Sales}, \textbf{EU\_Sales}, \textbf{JP\_Sales} i \textbf{Other\_Sales} zmieniono kolejno: \Sexpr{sum(is.na(elim$NA_Sales))}, \Sexpr{sum(is.na(elim$EU_Sales))}, \Sexpr{sum(is.na(elim$JP_Sales))} i \Sexpr{sum(is.na(elim$Other_Sales))} wartości. Wykresy pudełkowe przedstawiające przedstawiające te dane narysowano na wykresie (Rys. \ref{fig:boxploty}). Z tak zmienionymi danymi można rozpocząć odpowiadanie na zadane pytanie badawcze.
 
-Początkowo narysowano histogramy ilościowe danych dotyczących sprzedaży (Rys. \ref{fig:Histogramy}), aby wizualnie sprawdzić czy wartości mają podobny rozkład. Patrząc na wykresy można strwierdzić, że prawie wszystkie są dosyć podobne. Jedynym znacznie różniącym się jest ten dotyczący kolumny \textbf{Other\_Sales}. 
+Początkowo narysowano histogramy ilościowe danych dotyczących sprzedaży (Rys. \ref{fig:Histogramy}), aby wizualnie sprawdzić czy wartości mają podobny rozkład. Patrząc na wykresy można strwierdzić, że prawie wszystkie są dosyć podobne. Jedynym znacznie różniącym się jest ten dotyczący kolumny \textbf{Other\_Sales}.
+
+<<rysunek, label=boxploty, echo=FALSE, warning=FALSE, results='hide', fig.cap="Wykresy pudekowe danych dotyczących sprzedaży", fig.align='center', fig.dim=c(6, 3.8), fig.pos="H">>=
+n = count(elim)
+
+elim2 = data.frame(Value=c(elim[[6]], elim[[7]], elim[[8]], elim[[9]], elim[[10]]), Rynek = rep(c("Ameryka Północna", "Europa", "Japonia", "Reszta świata", "Cały świat"), each=n[[1]]))
+
+elim2 %>% ggplot(aes(y=Value))+
+  geom_boxplot(aes(color=Rynek), outlier.size = 0.3)+
+  xlab("Populacja bez wartości odstających")+
+  ylab("Sprzedaż")
+@
 
 <<include=FALSE, cache=TRUE>>=
 name = c("w Ameryce Północnej", "w Europie", "w Japonii", "w reszcie świata", "na całym świecie")
@@ -206,7 +215,7 @@ D2 = ks.test(normed$Global_Sales, normed$EU_Sales)$statistic
 
 Korzystając z zauważonej zależności wykonano wykresy porównujące dystrybuanty empiryczne między wskazanymi kolumnami o najbardziej podobnych statystykach (Rys. \ref{fig:Dystrybuanty1} i \ref{fig:Dystrybuanty2}). Widać na nich duże podobieństwo badanych rozkładów. Wykonano również test Kołmogorowa-Smirnowa dla dwóch prób, którego hipotezą zerową jest równość rozkładów, a alternatywną nierówność. Statystyka testowa to $D=\sup|F_{1,n}(x)-F_{2, n}(x)|$, gdzie $F_{1,n}(x)$ i $F_{2, n}(x)$ to dystrybuanty emipryczne pierwszej i drugiej próby. Test w obu przypadkach odrzucił hipotezę zerową z p-wartością rzędu $10^{-16}$. Dla danych dotyczących sprzedaży w Ameryce Północnej i w Japonii wartość statystyki testowej wyniosła: $D=\Sexpr{D1}$, natomiast dla danych dotyczących sprzedaży w Europie i na całym świecie wyniosła: $D=\Sexpr{D2}$.
 
-Dzięki otrzymanym wynikom można stwierdzić, że rozkład sprzedaży gier na różnych rynkach nie jest taki sam, ale jest między nimi dosyć duże podobieństwo szczególnie wizualne, ale też jeśli chodzi o podstawowe statystyki rozkładu.
+Dzięki otrzymanym wynikom można stwierdzić, że rozkład sprzedaży gier na różnych rynkach nie jest taki sam, ale jest między nimi dosyć duże podobieństwo szczególnie wizualne, ale też jeśli chodzi o podstawowe statystyki rozkładu. Oczywiście należy pamiętać, że dane przed analizą zostały odpowiednio obrobione, ponieważ ciężko przeprowadzić analizę, z tak mocno odstającymi obserwacjami, oraz z tak dużą ilością zer.
 
 <<rysunek, label=Dystrybuanty1, echo=FALSE, results='hide', fig.cap="Porównanie dystrybuant empirycznych danych sprzeday w Ameryce Północnej i Japonii", fig.align='center', fig.dim=c(5, 2.5), fig.pos="H", warning=FALSE>>=
 normed %>% ggplot()+

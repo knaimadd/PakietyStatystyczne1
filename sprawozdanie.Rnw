@@ -241,6 +241,83 @@ normed %>% ggplot()+
         legend.text=element_text(size=8))
 @
 
+\subsection{Na jakich platformach sprzedaje się najwięcej gier oraz jacy wydawcy to robią?}
+
+Rozpoczynając analizę za pomocą poniższego kodu znaleziono wartości, a następnie stworzono tabelkę (Tab. \ref{rankPlatform}) zawierającą 10 Platform dla których suma sprzedaży wszystkich gier na całym świecie była największa. Wynik nie jest zaskakujący, gdyż nie uwzględniając komputerów osobistych (PC) ta mocono pokrywa się z rankingiem dziesięciu najlepiej sprzedających się konsol\footnote{https://www.statista.com/statistics/1101872/unit-sales-video-game-consoles/} będącym w kolejności: PS2 (PlayStation 2), DS (Nintendo DS), NS (Nintendo Switch), GB (Game Boy), PS4 (PlayStation 4), PS (PlayStation), Wii, PS3 (PlayStation 3), X360 (Xbox 360), PSP (PlayStation Portable). Jedyne platfromy jakie się nie pojawiają w tabelce to NS oraz GB, gdzie NS nie pojawia się w badanym zbiorze (najpewniej z powodu, że to stosunkowo nowa konsola i nie było jej na rynku w czasie tworzenia zbioru danych). Dodatkowo GBA (Game Boy Advanced) nie znajduję się wśród najlepiej sprzedających się konsol, ale znajduje się w stworzonej tabelce.
+
+Dla znalezionych platform wykonano wykresy pudełkowe (Rys. \ref{fig:boxPlotform}) rozkładu sprzedaży na całym świecie. Postanowiono zostawić wartości odstające, gdyż uwzględniane są w zestawieniu ilości sprzedanych gier. Warto zwrócić uwagę na jedną obserwację, która jest najbardziej odstająca (82.53 miliony sprzedanych kopii). Jest to gra \textit{Wii Sports}, której wysoka sprzedaż spowodowana jest tym, że była dodawana do prawie każdej zakupionej konsoli Wii.
+
+<<message=FALSE, cache=TRUE>>=
+bigPlatform <- gry %>% group_by(Platform) %>% 
+  summarise(Sum_Sales=sum(Global_Sales)) %>% 
+  arrange(desc(Sum_Sales)) %>% head(10)
+@
+
+\begin{table}[H]
+\centering
+\begin{tabular}{l|l|l|}
+\cline{2-3}
+                         & Platforma                         & Suma sprzedanych gier (w milionach) \\ \hline
+\multicolumn{1}{|l|}{1}  & \Sexpr{bigPlatform$Platform[[1]]} & \Sexpr{bigPlatform$Sum_Sales[[1]]} \\ \hline
+\multicolumn{1}{|l|}{2}  & \Sexpr{bigPlatform$Platform[[2]]} & \Sexpr{bigPlatform$Sum_Sales[[2]]} \\ \hline
+\multicolumn{1}{|l|}{3}  & \Sexpr{bigPlatform$Platform[[3]]} & \Sexpr{bigPlatform$Sum_Sales[[3]]} \\ \hline
+\multicolumn{1}{|l|}{4}  & \Sexpr{bigPlatform$Platform[[4]]} & \Sexpr{bigPlatform$Sum_Sales[[4]]} \\ \hline
+\multicolumn{1}{|l|}{5}  & \Sexpr{bigPlatform$Platform[[5]]} & \Sexpr{bigPlatform$Sum_Sales[[5]]} \\ \hline
+\multicolumn{1}{|l|}{6}  & \Sexpr{bigPlatform$Platform[[6]]} & \Sexpr{bigPlatform$Sum_Sales[[6]]} \\ \hline
+\multicolumn{1}{|l|}{7}  & \Sexpr{bigPlatform$Platform[[7]]} & \Sexpr{bigPlatform$Sum_Sales[[7]]} \\ \hline
+\multicolumn{1}{|l|}{8}  & \Sexpr{bigPlatform$Platform[[8]]} & \Sexpr{bigPlatform$Sum_Sales[[8]]} \\ \hline
+\multicolumn{1}{|l|}{9}  & \Sexpr{bigPlatform$Platform[[9]]} & \Sexpr{bigPlatform$Sum_Sales[[9]]} \\ \hline
+\multicolumn{1}{|l|}{10} & \Sexpr{bigPlatform$Platform[[10]]} & \Sexpr{bigPlatform$Sum_Sales[[10]]} \\ \hline
+\end{tabular}
+\caption{Ranking dziesięciu platfrom z największą ilością sprzedanych gier.}
+\label{rankPlatform}
+\end{table}
+
+<<rysunek, label=boxPlaform, echo=FALSE, results='hide', fig.cap="Wykresy pudełkowe sprzedaży gier na całym świecie ze względu na platforme", fig.align='center', fig.dim=c(6, 3.8), fig.pos="H", warning=FALSE>>=
+drop_na(gry %>% group_by(Platform) %>% 
+  mutate(Sum_Sales=sum(Global_Sales)) %>%
+  mutate(Global_Sales = if_else(Platform %in% bigPlatform$Platform, Global_Sales, NA))) %>%
+  arrange(desc(Sum_Sales)) %>% 
+  ggplot(aes(y=Global_Sales)) + geom_boxplot(aes(color=Platform), outlier.size=0.5)+
+  labs(y="Sprzedaż",color="Platforma")
+@
+
+Podobną tabelkę wykonano dla wydawców, którzy sprzedali największą ilość gier (Tab. \ref{rankPublisher}). Ponownie nie jest to zaskakujący wynik, ponieważ są to jedni z największych i najbardziej znanych wydawców gier komputerowych. Wykonano również wykresy pudełkowe (Rys. \ref{fig:boxPublisher}) rozkładu sprzedaży na całym świecie. Ponownie widać najbardziej odstającą wartość będącą grą \textit{Wii Sport}, ale można również zauważyć, że firma Nintendo dominuje jeśli chodzi o najlepiej sprzedające się poszczególne gry. Jest to ciekawa obserwacja, ponieważ w przeciwieństwie do reszty wydawców z zestawieniu (poza Sony Computer Entertainment), Nindendo wydaje gry wyłącznie na swoje konsole, więc działają na mniejszym rynku niż reszta firm.
+
+<<message=FALSE, cache=TRUE>>=
+bigPublisher <- gry %>% group_by(Publisher) %>%
+  summarise(Sum_Sales=sum(Global_Sales)) %>% 
+  arrange(desc(Sum_Sales)) %>% head(10)
+@
+
+\begin{table}[H]
+\centering
+\begin{tabular}{l|l|l|}
+\cline{2-3}
+                         & Platforma                         & Suma sprzedanych gier (w milionach) \\ \hline
+\multicolumn{1}{|l|}{1}  & \Sexpr{bigPublisher$Publisher[[1]]} & \Sexpr{bigPublisher$Sum_Sales[[1]]} \\ \hline
+\multicolumn{1}{|l|}{2}  & \Sexpr{bigPublisher$Publisher[[2]]} & \Sexpr{bigPublisher$Sum_Sales[[2]]} \\ \hline
+\multicolumn{1}{|l|}{3}  & \Sexpr{bigPublisher$Publisher[[3]]} & \Sexpr{bigPublisher$Sum_Sales[[3]]} \\ \hline
+\multicolumn{1}{|l|}{4}  & \Sexpr{bigPublisher$Publisher[[4]]} & \Sexpr{bigPublisher$Sum_Sales[[4]]} \\ \hline
+\multicolumn{1}{|l|}{5}  & \Sexpr{bigPublisher$Publisher[[5]]} & \Sexpr{bigPublisher$Sum_Sales[[5]]} \\ \hline
+\multicolumn{1}{|l|}{6}  & \Sexpr{bigPublisher$Publisher[[6]]} & \Sexpr{bigPublisher$Sum_Sales[[6]]} \\ \hline
+\multicolumn{1}{|l|}{7}  & \Sexpr{bigPublisher$Publisher[[7]]} & \Sexpr{bigPublisher$Sum_Sales[[7]]} \\ \hline
+\multicolumn{1}{|l|}{8}  & \Sexpr{bigPublisher$Publisher[[8]]} & \Sexpr{bigPublisher$Sum_Sales[[8]]} \\ \hline
+\multicolumn{1}{|l|}{9}  & \Sexpr{bigPublisher$Publisher[[9]]} & \Sexpr{bigPublisher$Sum_Sales[[9]]} \\ \hline
+\multicolumn{1}{|l|}{10} & \Sexpr{bigPublisher$Publisher[[10]]} & \Sexpr{bigPublisher$Sum_Sales[[10]]} \\ \hline
+\end{tabular}
+\caption{Ranking dziesięciu wydawców z największą ilością sprzedanych gier.}
+\label{rankPublisher}
+\end{table}
+
+<<rysunek, label=boxPublisher, echo=FALSE, results='hide', fig.cap="Wykresy pudełkowe sprzedaży gier na całym świecie ze względu na wydawcę", fig.align='center', fig.dim=c(6, 3.8), fig.pos="H", warning=FALSE>>=
+drop_na(gry %>% group_by(Platform) %>% 
+  mutate(Sum_Sales=sum(Global_Sales)) %>%
+  mutate(Global_Sales = if_else(Publisher %in% bigPublisher$Publisher, Global_Sales, NA))) %>%
+  arrange(desc(Sum_Sales)) %>%
+  ggplot(aes(y=Global_Sales)) + geom_boxplot(aes(color=Publisher), outlier.size=0.5)+
+  labs(y="Sprzedaż",color="Wydawca")
+@
 
 \section{Podsumowanie}
 

@@ -217,7 +217,7 @@ Korzystając z zauważonej zależności wykonano wykresy porównujące dystrybua
 
 Dzięki otrzymanym wynikom można stwierdzić, że rozkład sprzedaży gier na różnych rynkach nie jest taki sam, ale jest między nimi dosyć duże podobieństwo szczególnie wizualne, ale też jeśli chodzi o podstawowe statystyki rozkładu. Oczywiście należy pamiętać, że dane przed analizą zostały odpowiednio obrobione, ponieważ ciężko przeprowadzić analizę, z tak mocno odstającymi obserwacjami, oraz z tak dużą ilością zer.
 
-<<rysunek, label=Dystrybuanty1, echo=FALSE, results='hide', fig.cap="Porównanie dystrybuant empirycznych danych sprzeday w Ameryce Północnej i Japonii", fig.align='center', fig.dim=c(5, 2.5), fig.pos="H", warning=FALSE>>=
+<<rysunek, label=Dystrybuanty1, echo=FALSE, results='hide', fig.cap="Porównanie dystrybuant empirycznych danych sprzeday w Ameryce Północnej i Japonii", fig.align='center', fig.dim=c(6, 3.5), fig.pos="H", warning=FALSE>>=
 normed %>% ggplot()+
   stat_ecdf(aes(NA_Sales, color="NA_Sales"), size=0.6)+
   stat_ecdf(aes(JP_Sales, color="JP_Sales"), size=0.5)+
@@ -229,7 +229,7 @@ normed %>% ggplot()+
         legend.text=element_text(size=8))
 @
 
-<<rysunek, label=Dystrybuanty2, echo=FALSE, results='hide', fig.cap="Porównanie dystrybuant empirycznych danych sprzedaży w Europie i na całym świecie", fig.align='center', fig.dim=c(5, 2.5), fig.pos="H", warning=FALSE>>=
+<<rysunek, label=Dystrybuanty2, echo=FALSE, results='hide', fig.cap="Porównanie dystrybuant empirycznych danych sprzedaży w Europie i na całym świecie", fig.align='center', fig.dim=c(6, 3.5), fig.pos="H", warning=FALSE>>=
 normed %>% ggplot()+
   stat_ecdf(aes(Global_Sales, color="Global_Sales"), linewidth=0.6)+
   stat_ecdf(aes(EU_Sales, color="EU_Sales"), linewidth=0.5)+
@@ -319,7 +319,33 @@ drop_na(gry %>% group_by(Platform) %>%
   labs(y="Sprzedaż",color="Wydawca")
 @
 
+Ostatnią częścią odpowiedzi na zadane pytanie badawcze, było znalezienie jednocześnie jacy wydawcy i na jakich platformach sprzedali największą ilość gier. Wykonano tabelką (Tab. \ref{rankAll}) ze znalezionymi wynikami. Można zauważyć, że tylko trzech różnych wydawców znalazło się w zestawieniu. Zarówno Nintendo jak i Sony Computer Enternainment są jednocześnie producentami konsol, na których wydają gry (tzw. wydawcy first party), więc ich pojawienie się było spodziewane. Wyjątkiem jest Electronic Arts, którego pojawienie się jest zastanawiające i prowadzi do wniosków, że jest jest wyjątkowo dużym wydawcą nie będącym jednocześnie producentem kosol. Warto również zauważyć, że w zestawieniu pojawiła się platforma, której nie było w poprzednich rankingach i jest to kosola NES (Nintendo Entertainmetn System), która jest jedną ze pierwszych globalnie dostępnych konsol.
+
+<<message=FALSE, cache=TRUE>>=
+big <- gry %>% group_by(Publisher, Platform) %>%
+  summarise(Sum_Sales=sum(Global_Sales)) %>% 
+  arrange(desc(Sum_Sales)) %>% head(10)
+@
+
+\begin{table}[H]
+\centering
+\begin{tabular}{l|l|l|l|}
+\cline{2-4}
+                         & Wydawca                    & Platforma               & Suma sprzedanych gier (w milionach) \\ \hline
+\multicolumn{1}{|l|}{1}  & \Sexpr{big$Publisher[[1]]} &\Sexpr{big$Platform[[1]]}& \Sexpr{big$Sum_Sales[[1]]} \\ \hline
+\multicolumn{1}{|l|}{2}  & \Sexpr{big$Publisher[[2]]} &\Sexpr{big$Platform[[2]]}& \Sexpr{big$Sum_Sales[[2]]} \\ \hline
+\multicolumn{1}{|l|}{3}  & \Sexpr{big$Publisher[[3]]} &\Sexpr{big$Platform[[3]]}& \Sexpr{big$Sum_Sales[[3]]} \\ \hline
+\multicolumn{1}{|l|}{4}  & \Sexpr{big$Publisher[[4]]} &\Sexpr{big$Platform[[4]]}& \Sexpr{big$Sum_Sales[[4]]} \\ \hline
+\multicolumn{1}{|l|}{5}  & \Sexpr{big$Publisher[[5]]} &\Sexpr{big$Platform[[5]]}& \Sexpr{big$Sum_Sales[[5]]} \\ \hline
+\multicolumn{1}{|l|}{6}  & \Sexpr{big$Publisher[[6]]} &\Sexpr{big$Platform[[6]]}& \Sexpr{big$Sum_Sales[[6]]} \\ \hline
+\multicolumn{1}{|l|}{7}  & \Sexpr{big$Publisher[[7]]} &\Sexpr{big$Platform[[7]]}& \Sexpr{big$Sum_Sales[[7]]} \\ \hline
+\multicolumn{1}{|l|}{8}  & \Sexpr{big$Publisher[[8]]} &\Sexpr{big$Platform[[8]]}& \Sexpr{big$Sum_Sales[[8]]} \\ \hline
+\multicolumn{1}{|l|}{9}  & \Sexpr{big$Publisher[[9]]} &\Sexpr{big$Platform[[9]]}& \Sexpr{big$Sum_Sales[[9]]} \\ \hline
+\multicolumn{1}{|l|}{10} & \Sexpr{big$Publisher[[10]]} & \Sexpr{big$Platform[[10]]}&\Sexpr{big$Sum_Sales[[10]]} \\ \hline
+\end{tabular}
+\caption{Ranking dziesięciu wydawców i platform z największą ilością sprzedanych gier.}
+\label{rankAll}
+\end{table}
+
 \section{Podsumowanie}
-
-
 \end{document}

@@ -346,6 +346,7 @@ big <- gry %>% group_by(Publisher, Platform) %>%
 \caption{Ranking dziesięciu wydawców i platform z największą ilością sprzedanych gier.}
 \label{rankAll}
 \end{table}
+\subsection{Czy ocena graczy i krytyków wpływa na sprzedaż?}
 
 \section{Podsumowanie}
 \end{document}

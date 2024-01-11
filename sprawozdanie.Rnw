@@ -48,9 +48,14 @@ Celem sprawozdania była analiza wybranych danych na podstawie wiedzy zdobytej n
 
 Dane zaczerpnięte zostały ze strony \href{kaggle.com}{Kaggle}\footnote{https://www.kaggle.com/datasets/rush4ratio/video-game-sales-with-ratings}, a dotyczą sprzedaży oraz ocen gier komputerowych. Wartości dotyczące sprzedaży zostały stworzone na bazie strony \href{https://www.vgchartz.com/}{VGChartz}, natomiast oceny gier zostały wzięte ze strony \href{https://www.metacritic.com}{Metacritic}. Całkowita ilość badanych gier to 16719.
 
-%to jest ukryte bo mi sie przydaje we wstępie, ale no wczytanie danych zostawiamy na kolejną sekcje
-<<include=FALSE, cache=TRUE>>=
+<<include=FALSE>>=
 library(tidyverse)
+library(ggpubr)
+library(moments)
+@
+
+<<include=FALSE, cache=TRUE>>=
+pdf.options(encoding='ISOLatin2')
 
 gry <- read_csv("gry.csv")
 
@@ -89,20 +94,8 @@ Analiza danych dotyczyła następujących pytań badawczych:
 
 \section{Wczytanie danych i obsługa ich braków}
 
-% To jest po to, żeby wczytać bibliotekę za każdym razem, ale nie wczytywać csv (działa szybciej po pierwszym przekompilowaniu)
-<<include=FALSE>>=
-library(tidyverse)
-library(ggpubr)
-library(moments)
-@
-% Na pokaz
-<<message=FALSE, cache=TRUE>>=
-library(tidyverse)
 
-gry <- read_csv("gry.csv")
-@
 
-% Nie wiem kto to bedzie pisał, ale musi tu być coś w stylu "Warto zauważyć, że w zmiennych dotyczących sprzedaży nie występują braki danych i wynika to z tego, że najprawdopodobniej zbieranie danych zostało rozpoczęte właśnie od wartości dotyczących sprzedaży"
 \section{Analiza danych}
 \subsection{Czy sprzedaż gier rozkłada się podobnie na różnych rynkach?}
 
@@ -116,9 +109,9 @@ gry |> ggplot(aes(y=Global_Sales))+
   theme(plot.title=element_text(size=10, hjust=0.5))
 @
 
-Takie same wnioski dotyczące obserwacji odstających wyciągnięto dla wartości \textbf{NA\_Sales}, \textbf{EU\_Sales}, \textbf{JP\_Sales} i \textbf{Other\_Sales}. W celu przeprowadzenia analizy dotyczącej podobieństwa rozkładów sprzedaży postanowiono odrzucić wartości odstajęce i silnie wpływowe. Aby to zrobić początkowo odrzucono wartości równe 0, których duża ilość silnie wpływają na rozkład, ale utrudniają analizę. Następnie wyeliminowano wartości będące poza wąsami, czyli te będące poza przedziałem $[Q_1-1,5\cdot IQR; Q\_3+1,5\cdot IQR]$, gdzie $Q_1$ i $Q_3$ to pierwszy i trzeci kwartyl badanych wartości, a $IQR$ to rozstrzał międzykwartylowy. Poniższy kod przedstawia jak zostało to wykonane dla zmiennej \textbf{Global\_Sales} w R:
+Takie same wnioski dotyczące obserwacji odstających wyciągnięto dla wartości \textbf{NA\_Sales}, \textbf{EU\_Sales}, \textbf{JP\_Sales} i \textbf{Other\_Sales}. W celu przeprowadzenia analizy dotyczącej podobieństwa rozkładów sprzedaży postanowiono odrzucić wartości odstajęce i silnie wpływowe. Aby to zrobić początkowo odrzucono wartości równe 0, których duża ilość silnie wpływają na rozkład, ale utrudniają analizę. Następnie wyeliminowano wartości będące poza wąsami, czyli te będące poza przedziałem $[Q_1-1,5\cdot IQR; Q\_3+1,5\cdot IQR]$, gdzie $Q_1$ i $Q_3$ to pierwszy i trzeci kwartyl badanych wartości, a $IQR$ to rozstrzał międzykwartylowy.
 
-<<message=FALSE, cache=TRUE>>=
+<<include=FALSE, cache=TRUE>>=
 eliminated <- gry %>% filter(Global_Sales > 0) 
 
 Q <- quantile(gry$Global_Sales, probs=c(.25, .75), na.rm = TRUE)
@@ -129,7 +122,7 @@ eliminated <- eliminated %>% filter(Global_Sales > (Q[1] - 1.5*iqr) &
            Global_Sales > 0) 
 @
 
-Po eliminacji niechcianych wartości (których było \Sexpr{count(gry)-count(eliminated)}) otrzymano dane, które przedstawiono na poniższym wykresie pudełkowym (Rys. \ref{fig:GlobalOds}). Widać na nim, że wyeliminowanie wartości odstających spowodowało, że rozkład jest mniej zdegenerowany.
+Po eliminacji niechcianych wartości, dla kolumy \textbf{Global\_Sales} (których było \Sexpr{count(gry)-count(eliminated)}) otrzymano dane, które przedstawiono na poniższym wykresie pudełkowym (Rys. \ref{fig:GlobalOds}). Widać na nim, że wyeliminowanie wartości odstających spowodowało, że rozkład jest mniej zdegenerowany.
 
 <<rysunek, label=GlobalOds, echo=FALSE, results='hide', fig.cap="Wykres pudełkowy z odrzuconymi wartościami odstającymi", fig.align='center', fig.dim=c(5, 3.8), fig.pos="H">>=
 eliminated |> ggplot(aes(y=Global_Sales))+
@@ -138,7 +131,7 @@ eliminated |> ggplot(aes(y=Global_Sales))+
   ylab("Globalna sprzedaż gier (w milionach)")
 @
 
-<<message=FALSE, cache=TRUE>>=
+<<include=FALSE, cache=TRUE>>=
 outlier<- function(X) {
   Q = quantile(X, probs=c(0.25, 0.75), na.rm=TRUE)
   iqr = IQR(X, na.rm=TRUE)
@@ -150,7 +143,7 @@ elim <- gry %>% mutate(across(ends_with("Sales"), ~replace(., .==0, NA))) %>%
   mutate(across(ends_with("Sales"), ~replace(., outlier(.), NA)))
 @
 
-Dla wszystkich pozostałych zmiennych dotyczących sprzedaży gier wykonano podobną procedurę tylko zamiast usuwać wartości zamieniono je na braki danych (kod powyżej). Dla \textbf{NA\_Sales}, \textbf{EU\_Sales}, \textbf{JP\_Sales} i \textbf{Other\_Sales} zmieniono kolejno: \Sexpr{sum(is.na(elim$NA_Sales))}, \Sexpr{sum(is.na(elim$EU_Sales))}, \Sexpr{sum(is.na(elim$JP_Sales))} i \Sexpr{sum(is.na(elim$Other_Sales))} wartości. Wykresy pudełkowe przedstawiające przedstawiające te dane narysowano na wykresie (Rys. \ref{fig:boxploty}). Z tak zmienionymi danymi można rozpocząć odpowiadanie na zadane pytanie badawcze.
+Dla wszystkich pozostałych zmiennych dotyczących sprzedaży gier wykonano podobną procedurę. Dla \textbf{NA\_Sales}, \textbf{EU\_Sales}, \textbf{JP\_Sales} i \textbf{Other\_Sales} usunięto kolejno: \Sexpr{sum(is.na(elim$NA_Sales))}, \Sexpr{sum(is.na(elim$EU_Sales))}, \Sexpr{sum(is.na(elim$JP_Sales))} i \Sexpr{sum(is.na(elim$Other_Sales))} wartości. Wykresy pudełkowe przedstawiające te dane narysowano na wykresie (Rys. \ref{fig:boxploty}). Z tak zmienionymi danymi można rozpocząć odpowiadanie na zadane pytanie badawcze.
 
 Początkowo narysowano histogramy ilościowe danych dotyczących sprzedaży (Rys. \ref{fig:Histogramy}), aby wizualnie sprawdzić czy wartości mają podobny rozkład. Patrząc na wykresy można strwierdzić, że prawie wszystkie są dosyć podobne. Jedynym znacznie różniącym się jest ten dotyczący kolumny \textbf{Other\_Sales}.
 
@@ -180,9 +173,9 @@ for (i in 6:10) {
 ggarrange(p1, p2, p3, p4, p5, nrow=3, ncol=2)
 @
 
-Kolejnym problemem w odpowiedzi na zadane pytanie, jest fakt, że z uwagi na różną wielkość badanych rynków dane ich dotyczące przyjmują wartości na różnych przedziałach. W celu dokładnej analizy podobieństwa unormowano tak, aby zawierały wartości niewiększe niż 1. Wykonano to dzieląc wartości w kolumnach dotyczących sprzedaży przez wartości największe w danych kolumnach. Wykonano to w poniższym kodzie:
+Kolejnym problemem w odpowiedzi na zadane pytanie, jest fakt, że z uwagi na różną wielkość badanych rynków dane ich dotyczące przyjmują wartości na różnych przedziałach. W celu dokładnej analizy podobieństwa unormowano tak, aby zawierały wartości niewiększe niż 1. Wykonano to dzieląc wartości w kolumnach dotyczących sprzedaży przez wartości największe w danych kolumnach.
 
-<<message=FALSE, cache=TRUE>>=
+<<include=FALSE, cache=TRUE>>=
 normed <- elim %>% mutate(across(ends_with("Sales"), ~ ./max(., na.rm=TRUE)))
 @
 <<include=FALSE, cache=TRUE>>=
@@ -206,7 +199,7 @@ kurt = sapply(normed[6:10], function(x) {round(kurtosis(x, na.rm=TRUE), digits =
 \label{Statystyki}
 \end{table}
 
-Dla tak unormowanych danych stworzono tabelkę (Tab. \ref{Statystyki}) z podstawowymi statystykami rozkładu, które policzono korzystajc z R (skośność i kurtoza z biblioteki \textit{moments}). Widać, że średniej, wariancji i skośności są dosyć mocno zbliżone między kolumnami (poza skośnością \textbf{Other\_Sales}). Kurtoza jednak ma wyraźniejsze różnicę, ale jest blisko (różnica mniejsza niż $0.1$) między \textbf{NA\_Sales} i \textbf{JP\_Sales} oraz między \textbf{EU\_Sales} i \textbf{Global\_Sales}.
+Dla tak unormowanych danych stworzono tabelkę (Tab. \ref{Statystyki}) z podstawowymi statystykami rozkładu. Widać, że wartości średniej, wariancji i skośności są dosyć mocno zbliżone między kolumnami (poza skośnością \textbf{Other\_Sales}). Kurtoza jednak ma wyraźniejsze różnicę, ale jest blisko (różnica mniejsza niż $0.1$) między \textbf{NA\_Sales} i \textbf{JP\_Sales} oraz między \textbf{EU\_Sales} i \textbf{Global\_Sales}.
 
 <<include=FALSE, cachy=TRUE>>=
 D1 = ks.test(normed$JP_Sales, normed$NA_Sales)$statistic
@@ -243,11 +236,15 @@ normed %>% ggplot()+
 
 \subsection{Na jakich platformach sprzedaje się najwięcej gier oraz jacy wydawcy to robią?}
 
-Rozpoczynając analizę za pomocą poniższego kodu znaleziono wartości, a następnie stworzono tabelkę (Tab. \ref{rankPlatform}) zawierającą 10 Platform dla których suma sprzedaży wszystkich gier na całym świecie była największa. Wynik nie jest zaskakujący, gdyż nie uwzględniając komputerów osobistych (PC) ta mocono pokrywa się z rankingiem dziesięciu najlepiej sprzedających się konsol\footnote{https://www.statista.com/statistics/1101872/unit-sales-video-game-consoles/} będącym w kolejności: PS2 (PlayStation 2), DS (Nintendo DS), NS (Nintendo Switch), GB (Game Boy), PS4 (PlayStation 4), PS (PlayStation), Wii, PS3 (PlayStation 3), X360 (Xbox 360), PSP (PlayStation Portable). Jedyne platfromy jakie się nie pojawiają w tabelce to NS oraz GB, gdzie NS nie pojawia się w badanym zbiorze (najpewniej z powodu, że to stosunkowo nowa konsola i nie było jej na rynku w czasie tworzenia zbioru danych). Dodatkowo GBA (Game Boy Advanced) nie znajduję się wśród najlepiej sprzedających się konsol, ale znajduje się w stworzonej tabelce.
+Rozpoczynając analizę znaleziono wartości, a następnie stworzono tabelkę (Tab. \ref{rankPlatform}) zawierającą 10 Platform dla których suma sprzedaży wszystkich gier na całym świecie była największa. Wynik nie jest zaskakujący, gdyż nie uwzględniając komputerów osobistych (PC) ta mocono pokrywa się z rankingiem dziesięciu najlepiej sprzedających się konsol\footnote{https://www.statista.com/statistics/1101872/unit-sales-video-game-consoles/} będącym w kolejności:
+\begin{enumerate}
+\item PS2 (PlayStation 2), DS (Nintendo DS), NS (Nintendo Switch), GB (Game Boy), PS4 (PlayStation 4), PS (PlayStation), Wii, PS3 (PlayStation 3), X360 (Xbox 360), PSP (PlayStation Portable).
+\end{enumerate}
+Jedyne platfromy jakie się nie pojawiają w tabelce to NS oraz GB, gdzie NS nie pojawia się w badanym zbiorze (najpewniej z powodu, że to stosunkowo nowa konsola i nie było jej na rynku w czasie tworzenia zbioru danych). Dodatkowo GBA (Game Boy Advanced) nie znajduję się wśród najlepiej sprzedających się konsol, ale znajduje się w stworzonej tabelce.
 
-Dla znalezionych platform wykonano wykresy pudełkowe (Rys. \ref{fig:boxPlotform}) rozkładu sprzedaży na całym świecie. Postanowiono zostawić wartości odstające, gdyż uwzględniane są w zestawieniu ilości sprzedanych gier. Warto zwrócić uwagę na jedną obserwację, która jest najbardziej odstająca (82.53 miliony sprzedanych kopii). Jest to gra \textit{Wii Sports}, której wysoka sprzedaż spowodowana jest tym, że była dodawana do prawie każdej zakupionej konsoli Wii.
+Dla znalezionych platform wykonano wykresy pudełkowe (Rys. \ref{fig:boxPlatform}) rozkładu sprzedaży na całym świecie. Postanowiono zostawić wartości odstające, gdyż uwzględniane są w zestawieniu ilości sprzedanych gier. Warto zwrócić uwagę na jedną obserwację, która jest najbardziej odstająca (82.53 miliony sprzedanych kopii). Jest to gra \textit{Wii Sports}, której wysoka sprzedaż spowodowana jest tym, że była dodawana do prawie każdej zakupionej konsoli Wii.
 
-<<message=FALSE, cache=TRUE>>=
+<<include=FALSE, cache=TRUE>>=
 bigPlatform <- gry %>% group_by(Platform) %>% 
   summarise(Sum_Sales=sum(Global_Sales)) %>% 
   arrange(desc(Sum_Sales)) %>% head(10)
@@ -273,7 +270,7 @@ bigPlatform <- gry %>% group_by(Platform) %>%
 \label{rankPlatform}
 \end{table}
 
-<<rysunek, label=boxPlaform, echo=FALSE, results='hide', fig.cap="Wykresy pudełkowe sprzedaży gier na całym świecie ze względu na platforme", fig.align='center', fig.dim=c(6, 3.8), fig.pos="H", warning=FALSE>>=
+<<rysunek, label=boxPlatform, echo=FALSE, results='hide', fig.cap="Wykresy pudełkowe sprzedaży gier na całym świecie ze względu na platforme", fig.align='center', fig.dim=c(6, 3.8), fig.pos="H", warning=FALSE>>=
 drop_na(gry %>% group_by(Platform) %>% 
   mutate(Sum_Sales=sum(Global_Sales)) %>%
   mutate(Global_Sales = if_else(Platform %in% bigPlatform$Platform, Global_Sales, NA))) %>%
@@ -284,7 +281,7 @@ drop_na(gry %>% group_by(Platform) %>%
 
 Podobną tabelkę wykonano dla wydawców, którzy sprzedali największą ilość gier (Tab. \ref{rankPublisher}). Ponownie nie jest to zaskakujący wynik, ponieważ są to jedni z największych i najbardziej znanych wydawców gier komputerowych. Wykonano również wykresy pudełkowe (Rys. \ref{fig:boxPublisher}) rozkładu sprzedaży na całym świecie. Ponownie widać najbardziej odstającą wartość będącą grą \textit{Wii Sport}, ale można również zauważyć, że firma Nintendo dominuje jeśli chodzi o najlepiej sprzedające się poszczególne gry. Jest to ciekawa obserwacja, ponieważ w przeciwieństwie do reszty wydawców z zestawieniu (poza Sony Computer Entertainment), Nindendo wydaje gry wyłącznie na swoje konsole, więc działają na mniejszym rynku niż reszta firm.
 
-<<message=FALSE, cache=TRUE>>=
+<<include=FALSE, cache=TRUE>>=
 bigPublisher <- gry %>% group_by(Publisher) %>%
   summarise(Sum_Sales=sum(Global_Sales)) %>% 
   arrange(desc(Sum_Sales)) %>% head(10)
@@ -321,7 +318,7 @@ drop_na(gry %>% group_by(Platform) %>%
 
 Ostatnią częścią odpowiedzi na zadane pytanie badawcze, było znalezienie jednocześnie jacy wydawcy i na jakich platformach sprzedali największą ilość gier. Wykonano tabelką (Tab. \ref{rankAll}) ze znalezionymi wynikami. Można zauważyć, że tylko trzech różnych wydawców znalazło się w zestawieniu. Zarówno Nintendo jak i Sony Computer Enternainment są jednocześnie producentami konsol, na których wydają gry (tzw. wydawcy first party), więc ich pojawienie się było spodziewane. Wyjątkiem jest Electronic Arts, którego pojawienie się jest zastanawiające i prowadzi do wniosków, że jest jest wyjątkowo dużym wydawcą nie będącym jednocześnie producentem kosol. Warto również zauważyć, że w zestawieniu pojawiła się platforma, której nie było w poprzednich rankingach i jest to kosola NES (Nintendo Entertainmetn System), która jest jedną ze pierwszych globalnie dostępnych konsol.
 
-<<message=FALSE, cache=TRUE>>=
+<<include=FALSE, cache=TRUE>>=
 big <- gry %>% group_by(Publisher, Platform) %>%
   summarise(Sum_Sales=sum(Global_Sales)) %>% 
   arrange(desc(Sum_Sales)) %>% head(10)

@@ -62,6 +62,8 @@ gry <- read_csv("gry.csv")
 no_unique <- sapply(gry, function(x) length(unique(x)))
 maxGry <- sapply(gry, max, na.rm=TRUE)
 minGry <- sapply(gry, min, na.rm=TRUE)
+
+nNA <- sum(is.na(gry))
 @
 
 Dane określone są następującymi kolumnami:
@@ -94,7 +96,7 @@ Analiza danych dotyczyła następujących pytań badawczych:
 
 \section{Wczytanie danych i obsługa ich braków}
 
-
+Dane zostały wczytane z pliku CSV (ang. \textit{comma-separated values}, wartości oddzielone przecinkiem) w języku programowanie R, korzystając z funkcji read_csv(). Nie było problemów z etykietami i typami kolumn w badanym zbiorze. Braki danych (których w pliku jest \Sexpr{nNA}) nie są z góry usuwane, ponieważ usuwając taki brak, usuwany jest cały wiersz i potencjalnie można przez to utracić przydatne dane. Obsługa tych braków większość czasu wykonywana jest automatycznie przez biblioteki tworzące wykresy. Natomiast w przypadku pewnych funkcji takich jak mean (średnia próbkowa) dodaje się dodatkowy argument na.rm=TRUE, dzięki któremu braki danych są pomijane w obliczeniach.   
 
 \section{Analiza danych}
 \subsection{Czy sprzedaż gier rozkłada się podobnie na różnych rynkach?}

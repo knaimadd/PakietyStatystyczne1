@@ -52,10 +52,11 @@ Dane zaczerpnięte zostały ze strony \href{kaggle.com}{Kaggle}\footnote{https:/
 library(tidyverse)
 library(ggpubr)
 library(moments)
+
+pdf.options(encoding='ISOLatin2')
 @
 
 <<include=FALSE, cache=TRUE>>=
-pdf.options(encoding='ISOLatin2')
 
 gry <- read_csv("gry.csv")
 
@@ -96,7 +97,7 @@ Analiza danych dotyczyła następujących pytań badawczych:
 
 \section{Wczytanie danych i obsługa ich braków}
 
-Dane zostały wczytane z pliku CSV (ang. \textit{comma-separated values}, wartości oddzielone przecinkiem) w języku programowanie R, korzystając z funkcji read\_csv(). Nie było problemów z etykietami i typami kolumn w badanym zbiorze. Braki danych (których w pliku jest \Sexpr{nNA}) nie są z góry usuwane, ponieważ usuwając taki brak, usuwany jest cały wiersz i potencjalnie można przez to utracić przydatne dane. Obsługa tych braków większość czasu wykonywana jest automatycznie przez biblioteki tworzące wykresy. Natomiast w przypadku pewnych funkcji takich jak mean (średnia próbkowa) dodaje się dodatkowy argument na.rm=TRUE, dzięki któremu braki danych są pomijane w obliczeniach.   
+Dane zostały wczytane z pliku CSV (ang. \textit{comma-separated values}, wartości oddzielone przecinkiem) w języku programowanie R, korzystając z funkcji read\_csv(). Poza jedną kolumną, \textbf{User\_Score}, nie było problemów z etykietami i typami kolumn w badanym zbiorze. Wartości kolumny \textbf{User\_score} były zapisane jako tekstowy typ danych. Aby przeprowadzić dalszą analizę, zmieniliśmy ten tekstowy na typ liczbowy. Braki danych (których w pliku jest \Sexpr{nNA}) nie są z góry usuwane, ponieważ usuwając taki brak, usuwany jest cały wiersz i potencjalnie można przez to utracić przydatne dane. Obsługa tych braków większość czasu wykonywana jest automatycznie przez biblioteki tworzące wykresy. Natomiast w przypadku pewnych funkcji takich jak mean (średnia próbkowa) dodaje się dodatkowy argument na.rm=TRUE, dzięki któremu braki danych są pomijane w obliczeniach.   
 
 \section{Analiza danych}
 \subsection{Czy sprzedaż gier rozkłada się podobnie na różnych rynkach?}
@@ -147,7 +148,7 @@ elim <- gry %>% mutate(across(ends_with("Sales"), ~replace(., .==0, NA))) %>%
 
 Dla wszystkich pozostałych zmiennych dotyczących sprzedaży gier wykonano podobną procedurę. Dla \textbf{NA\_Sales}, \textbf{EU\_Sales}, \textbf{JP\_Sales} i \textbf{Other\_Sales} usunięto kolejno: \Sexpr{sum(is.na(elim$NA_Sales))}, \Sexpr{sum(is.na(elim$EU_Sales))}, \Sexpr{sum(is.na(elim$JP_Sales))} i \Sexpr{sum(is.na(elim$Other_Sales))} wartości. Wykresy pudełkowe przedstawiające te dane narysowano na wykresie (Rys. \ref{fig:boxploty}). Z tak zmienionymi danymi można rozpocząć odpowiadanie na zadane pytanie badawcze.
 
-Początkowo narysowano histogramy ilościowe danych dotyczących sprzedaży (Rys. \ref{fig:Histogramy}), aby wizualnie sprawdzić czy wartości mają podobny rozkład. Patrząc na wykresy można strwierdzić, że prawie wszystkie są dosyć podobne. Jedynym znacznie różniącym się jest ten dotyczący kolumny \textbf{Other\_Sales}.
+Początkowo narysowano histogramy ilościowe danych dotyczących sprzedaży (Rys. \ref{fig:Histogramy}), aby wizualnie sprawdzić czy wartości mają podobny rozkład. Patrząc na wykresy można stwierdzić, że prawie wszystkie są dosyć podobne. Jedynym znacznie różniącym się jest ten dotyczący kolumny \textbf{Other\_Sales}.
 
 <<rysunek, label=boxploty, echo=FALSE, warning=FALSE, results='hide', fig.cap="Wykresy pudekowe danych dotyczących sprzedaży", fig.align='center', fig.dim=c(6, 3.8), fig.pos="H">>=
 n = count(elim)
@@ -293,7 +294,7 @@ bigPublisher <- gry %>% group_by(Publisher) %>%
 \centering
 \begin{tabular}{l|l|l|}
 \cline{2-3}
-                         & Platforma                         & Suma sprzedanych gier (w milionach) \\ \hline
+                         & Wydawca                         & Suma sprzedanych gier (w milionach) \\ \hline
 \multicolumn{1}{|l|}{1}  & \Sexpr{bigPublisher$Publisher[[1]]} & \Sexpr{bigPublisher$Sum_Sales[[1]]} \\ \hline
 \multicolumn{1}{|l|}{2}  & \Sexpr{bigPublisher$Publisher[[2]]} & \Sexpr{bigPublisher$Sum_Sales[[2]]} \\ \hline
 \multicolumn{1}{|l|}{3}  & \Sexpr{bigPublisher$Publisher[[3]]} & \Sexpr{bigPublisher$Sum_Sales[[3]]} \\ \hline
@@ -346,6 +347,31 @@ big <- gry %>% group_by(Publisher, Platform) %>%
 \label{rankAll}
 \end{table}
 \subsection{Czy ocena graczy i krytyków wpływa na sprzedaż?}
+Na wstępie analizę podzielono na dwie kategorie: ocenę graczy oraz ocenę krytyków. Dla każdej z nich stworzono wykres punktowy. %tutaj dodać refki do rysunków
+Następnie policzono współczynnik korelacji Pearsona dla globalnych sprzedaży i oceny graczy, oraz globalnych sprzedaży i oceny krytyków. Przypomnijmy, że współczynnik korelacji Pearsona liczymy ze wzoru:
+$$4$$ % wzór na korelację
+Otrzymane wartości współczynniku korelacji Pearsona zawierają się w przedziale $[-1,1]$. Im wartość bezwzględna ze współczynnika jest bliższa 1, tym silniej skorelowane dane, natomiast wartość bliska zero sugeruje, że dane nie wykazują korelacji.
+Otrzymano wartości kolejno $0.2374$, oraz $0.0886$, co wskazuje na to, że analizowane dane nie wykazują korelacji.
 
+<<rysunek, label=porownanie_gracze, echo=FALSE, results='hide', fig.cap="zależność sprzedaży od oceny graczy", fig.align='center', fig.dim=c(6, 3.8), fig.pos="H", warning=FALSE>>=
+drop_na(gry) |> ggplot(aes(x=as.numeric(User_Score),y=Global_Sales)) + geom_point() + labs(y="Sprzedaż", x = "Ocena graczy")
+
+<<rysunek, label=porownanie_krytyków, echo=FALSE, results='hide', fig.cap="zależność sprzedaży od oceny krytykóq", fig.align='center', fig.dim=c(6, 3.8), fig.pos="H", warning=FALSE>>=
+drop_na(gry) |> ggplot(aes(x=as.numeric(Critic_Score),y=Global_Sales)) + geom_point() + labs(y="Sprzedaż", x = "Ocena krytyków")
+
+
+cor(drop_na(gry)$Global_Sales, drop_na(gry)$Critic_Score, method="pearson")
+cor(drop_na(gry)$Global_Sales, as.numeric(drop_na(gry)$User_Score), method="pearson")
+@
 \section{Podsumowanie}
+W powyższym sprawozdaniu zostały przeanalizowanie 3 kwestie:
+\begin{enumerate}
+  \item Czy sprzedaż gier rozkłada się podobnie dla różnych rynków?
+  \item Na jakich platformach sprzedaje się najwięcej gier oraz jacy wydawcy sprzedają ich najwięcej?
+  \item Czy ocena graczy i krytyków wpływa na sprzedaż (i potencjalnie jak)?
+\end{enumerate}
+W pierwszej części przeanalizowane zostały statystyki rozkładu takie jak średnia, wariancja, kurtoza i skośność. Dodatkowo zostały porównane wykresy pudełkowe, histogramy będące estymatorami gęstości rozkładów, oraz dystrybuanty empiryczne dla rynków z różnych regionów. Głównym wnioskiem z tamtejszej analizy jest to, że rynki gier komputerowych w różnych częściach świata wykazują duże podobieństwo.
+W drugiej części sporządzono listę platform oraz wydawców, którzy osiągnęli największą sprzedaż gier. W przypadku platformy bezkonkurencyjnym liderem jest konsola PlayStation 2 producenta Sony wydana $4$ marca $2000$ roku. Natomiast wydawcą, który odniósł największy sukces w łącznej sprzedaży gier jest japońska firma Nintendo.
+Na końcu w sprawozdaniu wyliczone zostały współczynniki korelacji Pearsona oraz wywołane wykresy, które miały na celu pomóc odpowiedzieć na pytanie odnośnie wpływu oceny graczy oraz krytyków na sprzedaż gier. Zarówno ze współczynniku jak i z graficznego porównania widać, że takowa zależność nie istnieje.
 \end{document}
+

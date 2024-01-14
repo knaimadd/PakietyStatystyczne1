@@ -349,7 +349,7 @@ big <- gry %>% group_by(Publisher, Platform) %>%
 \subsection{Czy ocena graczy i krytyków wpływa na sprzedaż?}
 Na wstępie analizę podzielono na dwie kategorie: ocenę graczy oraz ocenę krytyków. Dla każdej z nich stworzono wykres punktowy. %tutaj dodać refki do rysunków
 Następnie policzono współczynnik korelacji Pearsona dla globalnych sprzedaży i oceny graczy, oraz globalnych sprzedaży i oceny krytyków. Przypomnijmy, że współczynnik korelacji Pearsona liczymy ze wzoru:
-$$4$$ % wzór na korelację
+$$r = \frac{ \sum_{i = 0}^{n}(x_{i} - \bar{x})(y_{i} - \bar{y})}{\sqrt{\sum_{i = 0}^{n}(x_{i} - \bar{x})^{2}\sum_{i = 0}^{n}(y_{i} - \bar{y})^{2}}} $$
 Otrzymane wartości współczynniku korelacji Pearsona zawierają się w przedziale $[-1,1]$. Im wartość bezwzględna ze współczynnika jest bliższa 1, tym silniej skorelowane dane, natomiast wartość bliska zero sugeruje, że dane nie wykazują korelacji.
 Otrzymano wartości kolejno $0.2374$, oraz $0.0886$, co wskazuje na to, że analizowane dane nie wykazują korelacji.
 

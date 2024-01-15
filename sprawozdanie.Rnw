@@ -347,11 +347,14 @@ big <- gry %>% group_by(Publisher, Platform) %>%
 \label{rankAll}
 \end{table}
 \subsection{Czy ocena graczy i krytyków wpływa na sprzedaż?}
-Na wstępie analizę podzielono na dwie kategorie: ocenę graczy oraz ocenę krytyków. Dla każdej z nich stworzono wykres punktowy. %tutaj dodać refki do rysunków
-Następnie policzono współczynnik korelacji Pearsona dla globalnych sprzedaży i oceny graczy, oraz globalnych sprzedaży i oceny krytyków. Przypomnijmy, że współczynnik korelacji Pearsona liczymy ze wzoru:
+Na wstępie analizę podzielono na dwie kategorie: ocenę graczy oraz ocenę krytyków. Dla każdej z nich stworzono wykres punktowy.
+Zarówno na wykresie \ref{fig:porownanie_gracze} opisującym zależność sprzedaży produktu od oceny graczy, jak i na wykresie \ref{fig:porownanie_krytykow} w którym zmienną niezależną jest ocena krytyków widać bardzo dużą ilość gier, która ma znikomą sprzedaż, zarówno w części, w której oceny są wysokie, jak i w tej, w które są one niskie.
+Pomijając gry, których sprzedaż jest bardzo niska, możemy zauważyć pewną ciekawą zależność. Otóż większość gier, która wykazuje całkiem sporą sprzedaż, ma zwykle całkiem dobre oceny (powyżej połowy według skali). Mimo wszystko, aby sprawdzić zależność, postanowiono policzyć współczynnik korelacji Pearsona dla globalnych sprzedaży i oceny graczy, oraz globalnych sprzedaży i oceny krytyków. 
+Współczynnik korelacji Pearsona liczy się ze wzoru:
 $$r = \frac{ \sum_{i = 0}^{n}(x_{i} - \bar{x})(y_{i} - \bar{y})}{\sqrt{\sum_{i = 0}^{n}(x_{i} - \bar{x})^{2}\sum_{i = 0}^{n}(y_{i} - \bar{y})^{2}}} $$
+W powyższej części sprawozdania aby policzyć współczynnik korelacji Pearsona skorzystano w R z funkcji cor.
 Otrzymane wartości współczynniku korelacji Pearsona zawierają się w przedziale $[-1,1]$. Im wartość bezwzględna ze współczynnika jest bliższa 1, tym silniej skorelowane dane, natomiast wartość bliska zero sugeruje, że dane nie wykazują korelacji.
-Otrzymano wartości kolejno $0.2374$, oraz $0.0886$, co wskazuje na to, że analizowane dane nie wykazują korelacji.
+Otrzymano wartości kolejno $0.2374$, oraz $0.0886$, co wskazuje na to, że mimo iż oceny krytyków mają mniejsze znaczenie dla sprzedaży niż oceny graczy, to jednak analizowane dane nie wykazują większej korelacji.
 
 <<rysunek, label=porownanie_gracze, echo=FALSE, results='hide', fig.cap="zależność sprzedaży od oceny graczy", fig.align='center', fig.dim=c(6, 3.8), fig.pos="H", warning=FALSE>>=
 drop_na(gry) |> ggplot(aes(x=as.numeric(User_Score),y=Global_Sales)) + geom_point() + labs(y="Sprzedaż", x = "Ocena graczy")
@@ -371,7 +374,9 @@ W powyższym sprawozdaniu zostały przeanalizowanie 3 kwestie:
   \item Czy ocena graczy i krytyków wpływa na sprzedaż (i potencjalnie jak)?
 \end{enumerate}
 W pierwszej części przeanalizowane zostały statystyki rozkładu takie jak średnia, wariancja, kurtoza i skośność. Dodatkowo zostały porównane wykresy pudełkowe, histogramy będące estymatorami gęstości rozkładów, oraz dystrybuanty empiryczne dla rynków z różnych regionów. Głównym wnioskiem z tamtejszej analizy jest to, że rynki gier komputerowych w różnych częściach świata wykazują duże podobieństwo.
+
 W drugiej części sporządzono listę platform oraz wydawców, którzy osiągnęli największą sprzedaż gier. W przypadku platformy bezkonkurencyjnym liderem jest konsola PlayStation 2 producenta Sony wydana $4$ marca $2000$ roku. Natomiast wydawcą, który odniósł największy sukces w łącznej sprzedaży gier jest japońska firma Nintendo.
+
 Na końcu w sprawozdaniu wyliczone zostały współczynniki korelacji Pearsona oraz wywołane wykresy, które miały na celu pomóc odpowiedzieć na pytanie odnośnie wpływu oceny graczy oraz krytyków na sprzedaż gier. Zarówno ze współczynniku jak i z graficznego porównania widać, że takowa zależność nie istnieje.
 \end{document}
 

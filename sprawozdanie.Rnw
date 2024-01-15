@@ -353,6 +353,7 @@ Pomijając gry, których sprzedaż jest bardzo niska, możemy zauważyć pewną 
 Współczynnik korelacji Pearsona liczy się ze wzoru:
 $$r = \frac{ \sum_{i = 0}^{n}(x_{i} - \bar{x})(y_{i} - \bar{y})}{\sqrt{\sum_{i = 0}^{n}(x_{i} - \bar{x})^{2}\sum_{i = 0}^{n}(y_{i} - \bar{y})^{2}}} $$
 W powyższej części sprawozdania aby policzyć współczynnik korelacji Pearsona skorzystano w R z funkcji cor.
+
 Otrzymane wartości współczynniku korelacji Pearsona zawierają się w przedziale $[-1,1]$. Im wartość bezwzględna ze współczynnika jest bliższa 1, tym silniej skorelowane dane, natomiast wartość bliska zero sugeruje, że dane nie wykazują korelacji.
 Otrzymano wartości kolejno $0.2374$, oraz $0.0886$, co wskazuje na to, że mimo iż oceny krytyków mają mniejsze znaczenie dla sprzedaży niż oceny graczy, to jednak analizowane dane nie wykazują większej korelacji.
 
@@ -373,7 +374,8 @@ W powyższym sprawozdaniu zostały przeanalizowanie 3 kwestie:
   \item Na jakich platformach sprzedaje się najwięcej gier oraz jacy wydawcy sprzedają ich najwięcej?
   \item Czy ocena graczy i krytyków wpływa na sprzedaż (i potencjalnie jak)?
 \end{enumerate}
-W pierwszej części przeanalizowane zostały statystyki rozkładu takie jak średnia, wariancja, kurtoza i skośność. Dodatkowo zostały porównane wykresy pudełkowe, histogramy będące estymatorami gęstości rozkładów, oraz dystrybuanty empiryczne dla rynków z różnych regionów. Głównym wnioskiem z tamtejszej analizy jest to, że rynki gier komputerowych w różnych częściach świata wykazują duże podobieństwo.
+
+W pierwszej części przeanalizowane zostały statystyki rozkładu takie jak średnia, wariancja, kurtoza i skośność. Dodatkowo zostały porównane wykresy pudełkowe, histogramy będące estymatorami gęstości rozkładów, oraz dystrybuanty empiryczne dla rynków z różnych regionów. Głównym wnioskiem z tamtejszej analizy jest to, że rynki gier komputerowych w różnych częściach świata wykazują podobieństwo.
 
 W drugiej części sporządzono listę platform oraz wydawców, którzy osiągnęli największą sprzedaż gier. W przypadku platformy bezkonkurencyjnym liderem jest konsola PlayStation 2 producenta Sony wydana $4$ marca $2000$ roku. Natomiast wydawcą, który odniósł największy sukces w łącznej sprzedaży gier jest japońska firma Nintendo.
 

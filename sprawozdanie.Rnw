@@ -49,21 +49,26 @@ Celem sprawozdania była analiza wybranych danych na podstawie wiedzy zdobytej n
 Dane zaczerpnięte zostały ze strony \href{kaggle.com}{Kaggle}\footnote{https://www.kaggle.com/datasets/rush4ratio/video-game-sales-with-ratings}, a dotyczą sprzedaży oraz ocen gier komputerowych. Wartości dotyczące sprzedaży zostały stworzone na bazie strony \href{https://www.vgchartz.com/}{VGChartz}, natomiast oceny gier zostały wzięte ze strony \href{https://www.metacritic.com}{Metacritic}. Całkowita ilość badanych gier to 16719.
 
 <<include=FALSE>>=
+# Wczytanie bibliotek
 library(tidyverse)
 library(ggpubr)
 library(moments)
 
+# Polskie znaki w wykresach
 pdf.options(encoding='ISOLatin2')
 @
 
 <<include=FALSE, cache=TRUE>>=
 
+# Wczytanie danych z pliku CSV (należy ustawić folder roboczy na ten, w którym znajduje się plik)
 gry <- read_csv("gry.csv")
 
+# Liczby różnych wartości w kolumnach i wartości najmniejsze i największe 
 no_unique <- sapply(gry, function(x) length(unique(x)))
 maxGry <- sapply(gry, max, na.rm=TRUE)
 minGry <- sapply(gry, min, na.rm=TRUE)
 
+# Ilość braków danych
 nNA <- sum(is.na(gry))
 @
 
@@ -104,17 +109,20 @@ Dane zostały wczytane z pliku CSV (ang. \textit{comma-separated values}, warto�
 
 Podczas początkowej wizualizacji danych dotyczących sprzedaży zauważono dużą ilość obserwacji odstających wartości \textbf{Global\_Sales}. Można to zauważyć na wykresie pudełkowym (Rys. \ref{fig:GlobalBox}), którego część pudełkowa jest tak spłaszczona, że nie widać jak jest szeroka.
 
-<<rysunek, label=GlobalBox, echo=FALSE, results='hide', fig.cap="Wykres pudełkowy bez odrzucenia wartości odstających", fig.align='center', fig.dim=c(5, 3.5), fig.pos="H">>=
+<<rysunek, label=GlobalBox, echo=FALSE, results='hide', fig.cap="Wykres pudełkowy bez odrzucenia wartości odstających", fig.align='center', fig.dim=c(5, 2.5), fig.pos="H">>=
 gry |> ggplot(aes(y=Global_Sales))+
   geom_boxplot()+
   xlab("Cała populacja")+
   ylab("Globalna sprzedaż gier (w milionach)")+
-  theme(plot.title=element_text(size=10, hjust=0.5))
+  theme(axis.title=element_text(size=9, hjust=0.5))
 @
 
-Takie same wnioski dotyczące obserwacji odstających wyciągnięto dla wartości \textbf{NA\_Sales}, \textbf{EU\_Sales}, \textbf{JP\_Sales} i \textbf{Other\_Sales}. W celu przeprowadzenia analizy dotyczącej podobieństwa rozkładów sprzedaży postanowiono odrzucić wartości odstajęce i silnie wpływowe. Aby to zrobić początkowo odrzucono wartości równe 0, których duża ilość silnie wpływają na rozkład, ale utrudniają analizę. Następnie wyeliminowano wartości będące poza wąsami, czyli te będące poza przedziałem $[Q_1-1,5\cdot IQR; Q\_3+1,5\cdot IQR]$, gdzie $Q_1$ i $Q_3$ to pierwszy i trzeci kwartyl badanych wartości, a $IQR$ to rozstrzał międzykwartylowy.
+Takie same wnioski dotyczące obserwacji odstających wyciągnięto dla wartości \textbf{NA\_Sales}, \textbf{EU\_Sales}, \textbf{JP\_Sales} i \textbf{Other\_Sales}. W celu przeprowadzenia analizy dotyczącej podobieństwa rozkładów sprzedaży postanowiono odrzucić wartości odstające i silnie wpływowe. Aby to zrobić początkowo odrzucono wartości równe 0, których duża ilość silnie wpływają na rozkład, ale utrudniają analizę. Następnie wyeliminowano wartości będące poza wąsami, czyli te będące poza przedziałem $[Q_1-1,5\cdot IQR; Q\_3+1,5\cdot IQR]$, gdzie $Q_1$ i $Q_3$ to pierwszy i trzeci kwartyl badanych wartości, a $IQR$ to rozstrzał międzykwartylowy.
 
 <<include=FALSE, cache=TRUE>>=
+# Odrzucanie wartości odstających z Global_Sales
+
+
 eliminated <- gry %>% filter(Global_Sales > 0) 
 
 Q <- quantile(gry$Global_Sales, probs=c(.25, .75), na.rm = TRUE)
@@ -135,6 +143,9 @@ eliminated |> ggplot(aes(y=Global_Sales))+
 @
 
 <<include=FALSE, cache=TRUE>>=
+# Odrzucenie wartości odstających z reszty kolumn 
+
+# funkcja dzięki której znajdowane są wartości poza wąsami boxplota
 outlier<- function(X) {
   Q = quantile(X, probs=c(0.25, 0.75), na.rm=TRUE)
   iqr = IQR(X, na.rm=TRUE)
@@ -150,7 +161,7 @@ Dla wszystkich pozostałych zmiennych dotyczących sprzedaży gier wykonano podo
 
 Początkowo narysowano histogramy ilościowe danych dotyczących sprzedaży (Rys. \ref{fig:Histogramy}), aby wizualnie sprawdzić czy wartości mają podobny rozkład. Patrząc na wykresy można stwierdzić, że prawie wszystkie są dosyć podobne. Jedynym znacznie różniącym się jest ten dotyczący kolumny \textbf{Other\_Sales}.
 
-<<rysunek, label=boxploty, echo=FALSE, warning=FALSE, results='hide', fig.cap="Wykresy pudekowe danych dotyczących sprzedaży", fig.align='center', fig.dim=c(6, 3.8), fig.pos="H">>=
+<<rysunek, label=boxploty, echo=FALSE, warning=FALSE, results='hide', fig.cap="Wykresy pudełkowe danych dotyczących sprzedaży", fig.align='center', fig.dim=c(6, 2.8), fig.pos="H">>=
 n = count(elim)
 
 elim2 = data.frame(Value=c(elim[[6]], elim[[7]], elim[[8]], elim[[9]], elim[[10]]), Rynek = rep(c("Ameryka Północna", "Europa", "Japonia", "Reszta świata", "Cały świat"), each=n[[1]]))
@@ -172,16 +183,18 @@ for (i in 6:10) {
 }
 @
 
-<<rysunek, label=Histogramy, echo=FALSE, warning=FALSE, results='hide', fig.cap="Histogramy ilościowe danych dotyczących sprzedaży gier", fig.align='center', fig.dim=c(5, 4.6), fig.pos="H">>=
+<<rysunek, label=Histogramy, echo=FALSE, warning=FALSE, results='hide', fig.cap="Histogramy ilościowe danych dotyczących sprzedaży gier", fig.align='center', fig.dim=c(5, 3.7), fig.pos="H">>=
 ggarrange(p1, p2, p3, p4, p5, nrow=3, ncol=2)
 @
 
 Kolejnym problemem w odpowiedzi na zadane pytanie, jest fakt, że z uwagi na różną wielkość badanych rynków dane ich dotyczące przyjmują wartości na różnych przedziałach. W celu dokładnej analizy podobieństwa unormowano tak, aby zawierały wartości niewiększe niż 1. Wykonano to dzieląc wartości w kolumnach dotyczących sprzedaży przez wartości największe w danych kolumnach.
 
 <<include=FALSE, cache=TRUE>>=
+# Unormowanie danych
 normed <- elim %>% mutate(across(ends_with("Sales"), ~ ./max(., na.rm=TRUE)))
 @
 <<include=FALSE, cache=TRUE>>=
+# Wyliczenie statystyk rozkładu
 means = sapply(normed[6:10], function(x) {round(mean(x, na.rm=TRUE), digits = 4)})
 vars = sapply(normed[6:10], function(x) {round(var(x, na.rm=TRUE), digits = 4)})
 skew = sapply(normed[6:10], function(x) {round(skewness(x, na.rm=TRUE), digits=4)})
@@ -202,7 +215,7 @@ kurt = sapply(normed[6:10], function(x) {round(kurtosis(x, na.rm=TRUE), digits =
 \label{Statystyki}
 \end{table}
 
-Dla tak unormowanych danych stworzono tabelkę (Tab. \ref{Statystyki}) z podstawowymi statystykami rozkładu. Widać, że wartości średniej, wariancji i skośności są dosyć mocno zbliżone między kolumnami (poza skośnością \textbf{Other\_Sales}). Kurtoza jednak ma wyraźniejsze różnicę, ale jest blisko (różnica mniejsza niż $0.1$) między \textbf{NA\_Sales} i \textbf{JP\_Sales} oraz między \textbf{EU\_Sales} i \textbf{Global\_Sales}.
+Dla tak unormowanych danych stworzono tabelkę (Tab. \ref{Statystyki}) z podstawowymi statystykami rozkładu. Widać, że wartości średniej, wariancji i skośności są dosyć mocno zbliżone między kolumnami (poza skośnością \textbf{Other\_Sales}). Kurtoza jednak ma wyraźniejsze różnice, ale jest blisko (różnica mniejsza niż $0.1$) między \textbf{NA\_Sales} i \textbf{JP\_Sales} oraz między \textbf{EU\_Sales} i \textbf{Global\_Sales}.
 
 <<include=FALSE, cachy=TRUE>>=
 D1 = ks.test(normed$JP_Sales, normed$NA_Sales)$statistic
@@ -213,7 +226,7 @@ Korzystając z zauważonej zależności wykonano wykresy porównujące dystrybua
 
 Dzięki otrzymanym wynikom można stwierdzić, że rozkład sprzedaży gier na różnych rynkach nie jest taki sam, ale jest między nimi dosyć duże podobieństwo szczególnie wizualne, ale też jeśli chodzi o podstawowe statystyki rozkładu. Oczywiście należy pamiętać, że dane przed analizą zostały odpowiednio obrobione, ponieważ ciężko przeprowadzić analizę, z tak mocno odstającymi obserwacjami, oraz z tak dużą ilością zer.
 
-<<rysunek, label=Dystrybuanty1, echo=FALSE, results='hide', fig.cap="Porównanie dystrybuant empirycznych danych sprzeday w Ameryce Północnej i Japonii", fig.align='center', fig.dim=c(6, 3.5), fig.pos="H", warning=FALSE>>=
+<<rysunek, label=Dystrybuanty1, echo=FALSE, results='hide', fig.cap="Porównanie dystrybuant empirycznych danych sprzeday w Ameryce Północnej i Japonii", fig.align='center', fig.dim=c(6, 3.3), fig.pos="H", warning=FALSE>>=
 normed %>% ggplot()+
   stat_ecdf(aes(NA_Sales, color="NA_Sales"), size=0.6)+
   stat_ecdf(aes(JP_Sales, color="JP_Sales"), size=0.5)+
@@ -225,7 +238,7 @@ normed %>% ggplot()+
         legend.text=element_text(size=8))
 @
 
-<<rysunek, label=Dystrybuanty2, echo=FALSE, results='hide', fig.cap="Porównanie dystrybuant empirycznych danych sprzedaży w Europie i na całym świecie", fig.align='center', fig.dim=c(6, 3.5), fig.pos="H", warning=FALSE>>=
+<<rysunek, label=Dystrybuanty2, echo=FALSE, results='hide', fig.cap="Porównanie dystrybuant empirycznych danych sprzedaży w Europie i na całym świecie", fig.align='center', fig.dim=c(6, 3.3), fig.pos="H", warning=FALSE>>=
 normed %>% ggplot()+
   stat_ecdf(aes(Global_Sales, color="Global_Sales"), linewidth=0.6)+
   stat_ecdf(aes(EU_Sales, color="EU_Sales"), linewidth=0.5)+
@@ -241,13 +254,23 @@ normed %>% ggplot()+
 
 Rozpoczynając analizę znaleziono wartości, a następnie stworzono tabelkę (Tab. \ref{rankPlatform}) zawierającą 10 Platform dla których suma sprzedaży wszystkich gier na całym świecie była największa. Wynik nie jest zaskakujący, gdyż nie uwzględniając komputerów osobistych (PC) ta mocono pokrywa się z rankingiem dziesięciu najlepiej sprzedających się konsol\footnote{https://www.statista.com/statistics/1101872/unit-sales-video-game-consoles/} będącym w kolejności:
 \begin{enumerate}
-\item PS2 (PlayStation 2), DS (Nintendo DS), NS (Nintendo Switch), GB (Game Boy), PS4 (PlayStation 4), PS (PlayStation), Wii, PS3 (PlayStation 3), X360 (Xbox 360), PSP (PlayStation Portable).
+\item PS2 (PlayStation 2), 
+\item DS (Nintendo DS), 
+\item NS (Nintendo Switch),
+\item GB (Game Boy), 
+\item PS4 (PlayStation 4),
+\item PS (PlayStation), 
+\item Wii, 
+\item PS3 (PlayStation 3), 
+\item X360 (Xbox 360), 
+\item PSP (PlayStation Portable).
 \end{enumerate}
 Jedyne platfromy jakie się nie pojawiają w tabelce to NS oraz GB, gdzie NS nie pojawia się w badanym zbiorze (najpewniej z powodu, że to stosunkowo nowa konsola i nie było jej na rynku w czasie tworzenia zbioru danych). Dodatkowo GBA (Game Boy Advanced) nie znajduję się wśród najlepiej sprzedających się konsol, ale znajduje się w stworzonej tabelce.
 
 Dla znalezionych platform wykonano wykresy pudełkowe (Rys. \ref{fig:boxPlatform}) rozkładu sprzedaży na całym świecie. Postanowiono zostawić wartości odstające, gdyż uwzględniane są w zestawieniu ilości sprzedanych gier. Warto zwrócić uwagę na jedną obserwację, która jest najbardziej odstająca (82.53 miliony sprzedanych kopii). Jest to gra \textit{Wii Sports}, której wysoka sprzedaż spowodowana jest tym, że była dodawana do prawie każdej zakupionej konsoli Wii.
 
 <<include=FALSE, cache=TRUE>>=
+# Stworzenie rankingu
 bigPlatform <- gry %>% group_by(Platform) %>% 
   summarise(Sum_Sales=sum(Global_Sales)) %>% 
   arrange(desc(Sum_Sales)) %>% head(10)
@@ -354,13 +377,13 @@ Współczynnik korelacji Pearsona liczy się ze wzoru:
 $$r = \frac{ \sum_{i = 0}^{n}(x_{i} - \bar{x})(y_{i} - \bar{y})}{\sqrt{\sum_{i = 0}^{n}(x_{i} - \bar{x})^{2}\sum_{i = 0}^{n}(y_{i} - \bar{y})^{2}}} $$
 W powyższej części sprawozdania aby policzyć współczynnik korelacji Pearsona skorzystano w R z funkcji cor.
 
-Otrzymane wartości współczynniku korelacji Pearsona zawierają się w przedziale $[-1,1]$. Im wartość bezwzględna ze współczynnika jest bliższa 1, tym silniej skorelowane dane, natomiast wartość bliska zero sugeruje, że dane nie wykazują korelacji.
-Otrzymano wartości kolejno $0.2374$, oraz $0.0886$, co wskazuje na to, że mimo iż oceny krytyków mają mniejsze znaczenie dla sprzedaży niż oceny graczy, to jednak analizowane dane nie wykazują większej korelacji.
+Otrzymane wartości współczynniku korelacji Pearsona zawierają się w przedziale $[-1,1]$. Im wartość bezwzględna ze współczynnika jest bliższa 1, tym silniej skorelowane dane, natomiast wartość bliska zero sugeruje, że dane wykazują słabą korelację.
+Otrzymano wartości kolejno $r = 0.2374$, oraz $r = 0.0886$, co wskazuje na to, że mimo iż oceny krytyków mają mniejsze znaczenie dla sprzedaży niż oceny graczy, to jednak analizowane dane nie wykazują większej korelacji.
 
-<<rysunek, label=porownanie_gracze, echo=FALSE, results='hide', fig.cap="zależność sprzedaży od oceny graczy", fig.align='center', fig.dim=c(6, 3.8), fig.pos="H", warning=FALSE>>=
+<<rysunek, label=porownanie_gracze, echo=FALSE, results='hide', fig.cap="zależność sprzedaży od oceny graczy", fig.align='center', fig.dim=c(6, 3.3), fig.pos="H", warning=FALSE>>=
 drop_na(gry) |> ggplot(aes(x=as.numeric(User_Score),y=Global_Sales)) + geom_point() + labs(y="Sprzedaż", x = "Ocena graczy")
 
-<<rysunek, label=porownanie_krytyków, echo=FALSE, results='hide', fig.cap="zależność sprzedaży od oceny krytykóq", fig.align='center', fig.dim=c(6, 3.8), fig.pos="H", warning=FALSE>>=
+<<rysunek, label=porownanie_krytykow, echo=FALSE, results='hide', fig.cap="zależność sprzedaży od oceny krytykóq", fig.align='center', fig.dim=c(6, 3.3), fig.pos="H", warning=FALSE>>=
 drop_na(gry) |> ggplot(aes(x=as.numeric(Critic_Score),y=Global_Sales)) + geom_point() + labs(y="Sprzedaż", x = "Ocena krytyków")
 
 
@@ -379,6 +402,6 @@ W pierwszej części przeanalizowane zostały statystyki rozkładu takie jak śr
 
 W drugiej części sporządzono listę platform oraz wydawców, którzy osiągnęli największą sprzedaż gier. W przypadku platformy bezkonkurencyjnym liderem jest konsola PlayStation 2 producenta Sony wydana $4$ marca $2000$ roku. Natomiast wydawcą, który odniósł największy sukces w łącznej sprzedaży gier jest japońska firma Nintendo.
 
-Na końcu w sprawozdaniu wyliczone zostały współczynniki korelacji Pearsona oraz wywołane wykresy, które miały na celu pomóc odpowiedzieć na pytanie odnośnie wpływu oceny graczy oraz krytyków na sprzedaż gier. Zarówno ze współczynniku jak i z graficznego porównania widać, że takowa zależność nie istnieje.
+Na końcu w sprawozdaniu wyliczone zostały współczynniki korelacji Pearsona oraz wywołane wykresy, które miały na celu pomóc odpowiedzieć na pytanie odnośnie wpływu oceny graczy oraz krytyków na sprzedaż gier. Zarówno ze współczynniku jak i z graficznego porównania widać, że takowa zależność jest bardzo słaba.
 \end{document}
 
